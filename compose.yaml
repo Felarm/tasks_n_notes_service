@@ -1,0 +1,70 @@
+services:
+  task_n_note_service:
+    build: .
+    ports:
+      - "8000:8000"
+    command: >
+      bash -c "PYTHONPATH=/app .venv/bin/alembic upgrade head &&
+      .venv/bin/fastapi run --port 8000 --host 0.0.0.0"
+    container_name: task_n_note_service
+    env_file:
+      - .env_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - backend
+
+  outbox_worker:
+    build: .
+    container_name: task_n_note_service_outbox_workers
+    command: >
+      bash -c "PYTHONPATH=/app .venv/bin/python run_outbox.py"
+    env_file:
+      - .env_app
+    depends_on:
+      postgres:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+    networks:
+      - backend
+    restart: always
+
+  kafka:
+    image: apache/kafka:latest
+    volumes:
+      - ./kraft_logs:/tmp/kraft-combined-logs
+    container_name: kafka
+    ports:
+      - "29092:29092"
+    env_file:
+      - .env_kafka
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - backend
+
+  postgres:
+    image: postgres:alpine3.22
+    volumes:
+      - ./db_data/task_n_note_service:/var/lib/postgresql
+    ports:
+      - "5432:5432"
+    container_name: task_n_note_service_postgres_db
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    env_file:
+      - .env_postgres
+    networks:
+      - backend
+
+networks:
+  backend:
+    driver: bridge
