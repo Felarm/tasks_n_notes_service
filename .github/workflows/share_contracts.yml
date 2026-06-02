@@ -14,7 +14,7 @@ jobs:
 
       - name: Start app and generate contracts inside docker
         run: |
-            docker compose up --build -d
+            docker compose up task_n_note_service postgres --build -d
             docker compose exec -T -w /app task_n_note_service sh -c "PYTHONPATH=/app .venv/bin/python -m commands export_openapi"
             docker compose exec -T -w /app task_n_note_service sh -c "uvx --from datamodel-code-generator datamodel-codegen --input openapi.json --output task_n_note_service_contracts.py --capitalize-enum-members"
             docker cp task_n_note_service:/app/task_n_note_service_contracts.py schemas/task_n_note_service_contracts.py
