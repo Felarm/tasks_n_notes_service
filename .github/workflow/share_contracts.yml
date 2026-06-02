@@ -1,0 +1,50 @@
+name: Share contracts to other resources
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-contract:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout tasks n notes service
+        uses: actions/checkout@v4
+
+      - name: Start app and generate contracts inside docker
+        run: |
+            docker compose up --build -d
+            docker compose exec -T -w /app task_n_note_service sh -c "PYTHONPATH=/app .venv/bin/python -m commands export_openapi"
+            docker compose exec -T -w /app task_n_note_service sh -c "uvx --from datamodel-code-generator datamodel-codegen --input openapi.json --output task_n_note_service_contracts.py --capitalize-enum-members"
+            docker cp task_n_note_service:/app/task_n_note_service_contracts.py schemas/task_n_note_service_contracts.py
+            docker compose down
+
+      - name: Checkout command bot service
+        uses: actions/checkout@v4
+        with:
+          repository: "Felarm/command_bot"
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          path: "resource-service-dir"
+
+      - name: Copy contracts to command bot
+        run: |
+          mkdir -p resource-service-dir/schemas
+          cp schemas/task_n_note_service_contracts.py resource-service-dir/schemas/task_n_note_service_contracts.py
+
+      - name: Create PR in command bot repo
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          path: "resource-service-dir"
+          commit-message: "auto-update task_n_note_service contracts"
+          branch: "automation/update-task-n-note-service-contracts"
+          title: "Updated contracts from task_n_note service"
+          body: |
+            Task_n_note_service updated its models
+            This PR has datamodel-codegen version of it
+            Please verify before merging
+          base: master
+
+
+

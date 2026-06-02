@@ -32,6 +32,10 @@ class Settings(BaseSettings):
             f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}"
         )
 
+    @property
+    def test_db_url(self) -> str:
+        return f"postgresql+asyncpg://test:test@{self.DB_HOST}:{self.DB_PORT}/tests"
+
     model_config = SettingsConfigDict(env_file=".env_app", env_file_encoding="utf-8")
 
 

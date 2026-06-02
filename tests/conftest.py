@@ -22,12 +22,10 @@ from schemas.token import AccessTokenPayload
 from services.note import NoteService
 from services.task import TaskService
 
-TEST_DB_URL = "postgresql+asyncpg://postgres:postgres@127.0.0.1:5432/tests"
-
 
 @pytest_asyncio.fixture(scope="function")
 async def engine() -> AsyncGenerator[AsyncEngine, Any]:
-    engine = create_async_engine(url=TEST_DB_URL, echo=False)
+    engine = create_async_engine(url=settings.test_db_url, echo=False)
     async with engine.begin() as connection:
         await connection.run_sync(Base.metadata.create_all)
     yield engine
