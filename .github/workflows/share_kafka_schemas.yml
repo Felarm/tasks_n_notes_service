@@ -30,7 +30,7 @@ jobs:
           token: ${{ secrets.CROSS_REPO_TOKEN }}
           path: "resource-service-dir"
           commit-message: "auto-update task_n_note events schemas"
-          branch: "automation/update-task-n-note-events schemas"
+          branch: "automation/update-task-n-note-events-schemas"
           title: "Updated event schemas from task_n_note service"
           body: |
             Task_n_note_service updated its schemas events
