@@ -1,0 +1,39 @@
+name: Share kafka schemas to other resources
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  publish-schemas:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout task n notes service
+        uses: actions/checkout@v4
+
+      - name: Checkout notifier service
+        uses: actions/checkout@v4
+        with:
+          repository: "Felarm/notifier"
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          path: "resource-service-dir"
+
+      - name: Copy schemas
+        run: |
+          mkdir -p resource-service-dir/schemas
+          cp schemas/event.py resource-service-dir/schemas/task_n_note_service_events.py
+
+      - name: Create PR in notifier repo
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.CROSS_REPO_TOKEN }}
+          path: "resource-service-dir"
+          commit-message: "auto-update task_n_note events schemas"
+          branch: "automation/update-task-n-note-events schemas"
+          title: "Updated event schemas from task_n_note service"
+          body: |
+            Task_n_note_service updated its schemas events
+            This PR has new versions
+            Please verify before merging
+          base: master

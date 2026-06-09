@@ -22,7 +22,7 @@ async def get_user_tasks(
     return await task_service.get_user_tasks(int(user_data.sub), filter_params)
 
 
-@router.post("/create", response_model=TaskModelResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=TaskModelResponse, status_code=status.HTTP_201_CREATED)
 async def create_user_task(
         user_data: JWTUserData,
         task_service: TaskService_,
@@ -32,6 +32,6 @@ async def create_user_task(
     return new_task
 
 
-@router.delete("/delete/{task_id}", status_code=status.HTTP_200_OK)
+@router.delete("/{task_id}", status_code=status.HTTP_200_OK)
 async def delete_user_task(_: JWTUserData, task_service: TaskService_, task_id: int):
     return await task_service.delete_task(task_id)
