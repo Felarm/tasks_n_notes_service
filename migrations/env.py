@@ -12,6 +12,7 @@ from config import settings
 from database import Base
 from models.note import Note
 from models.task import Task
+from models.outbox import OutboxMessage
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
