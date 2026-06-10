@@ -10,7 +10,7 @@ class NoteCreate(BaseModel):
     remind_at: datetime
 
 
-class NoteModelResponse(NoteCreate):
+class NoteModel(NoteCreate):
     id: int
     user_id: int
     created_at: datetime

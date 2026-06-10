@@ -11,9 +11,3 @@ class AccessTokenPayload(BaseModel):
     iat: int  # timestamp issued at
     type: str = "access"
     jti: str
-
-
-class ServiceTokenPayload(BaseModel):
-    sub: str
-    username: str
-    type: str = "service"

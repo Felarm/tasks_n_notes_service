@@ -4,7 +4,7 @@ from jose import jwt, JWTError
 
 from config import settings
 from exceptions import UnauthorizedException
-from schemas.token import AccessTokenPayload, ServiceTokenPayload
+from schemas.token import AccessTokenPayload
 
 
 class JWTService:

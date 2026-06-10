@@ -5,8 +5,8 @@ import pytest
 from fastapi import status
 
 from main import app
-from schemas.note import NoteModelResponse, NoteCreate
-from schemas.task import TaskCreate, TaskModelResponse, TaskDateTimeFilter
+from schemas.note import NoteModel, NoteCreate
+from schemas.task import TaskCreate, TaskModel, TaskDateTimeFilter
 from tests.conftest import auth_header
 
 
@@ -32,7 +32,7 @@ class TestTaskApi:
             headers=auth_header,
         )
         assert response.status_code == status.HTTP_200_OK
-        user_tasks = [TaskModelResponse.model_validate(_) for _ in response.json()]
+        user_tasks = [TaskModel.model_validate(_) for _ in response.json()]
         assert len(user_tasks) == len(test_tasks)
 
     @pytest.mark.asyncio
@@ -64,7 +64,7 @@ class TestTaskApi:
             content=request_data.model_dump_json(),
         )
         assert response.status_code == status.HTTP_201_CREATED
-        created_task = TaskModelResponse.model_validate(response.json())
+        created_task = TaskModel.model_validate(response.json())
         assert created_task.user_id == 1
         assert created_task.name == request_data.name
         assert created_task.start_dt == request_data.start_dt.astimezone(UTC)
@@ -92,7 +92,7 @@ class TestNoteApi:
             headers=auth_header,
         )
         assert response.status_code == status.HTTP_200_OK
-        users_notes = [NoteModelResponse.model_validate(_) for _ in response.json()]
+        users_notes = [NoteModel.model_validate(_) for _ in response.json()]
         assert len(users_notes) == len(test_notes)
 
     @pytest.mark.asyncio
@@ -123,7 +123,7 @@ class TestNoteApi:
             content=request_data.model_dump_json()
         )
         assert response.status_code == status.HTTP_201_CREATED
-        new_note = NoteModelResponse.model_validate(response.json())
+        new_note = NoteModel.model_validate(response.json())
         assert new_note.user_id == 1
         assert new_note.name == request_data.name
         assert new_note.description == request_data.description

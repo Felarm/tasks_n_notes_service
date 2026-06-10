@@ -1,7 +1,14 @@
 from datetime import datetime
+from enum import Enum
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
+
+
+class EventType(str, Enum):
+    CREATE = "create"
+    UPDATE = "update"
+    DELETE = "delete"
 
 
 class BaseEvent(BaseModel):
@@ -10,22 +17,16 @@ class BaseEvent(BaseModel):
     tg_id: Optional[int] = None
     username: str
     name: str
+    event_type: str = EventType
 
 
-class BaseTaskEvent(BaseEvent):
+class TaskEvent(BaseEvent):
     description: Optional[str] = None
     start_dt: datetime
     end_dt: datetime
 
 
-class TaskCreateEvent(BaseTaskEvent):
-    event_type: str = "create_task"
-
-
-class BaseNoteEvent(BaseEvent):
+class NoteEvent(BaseEvent):
     description: Optional[str] = None
     remind_at: datetime
 
-
-class NoteCreateEvent(BaseNoteEvent):
-    event_type: str = "create_note"

@@ -11,7 +11,7 @@ class TaskCreate(BaseModel):
     end_dt: datetime
 
 
-class TaskModelResponse(TaskCreate):
+class TaskModel(TaskCreate):
     id: int
     state: str
     user_id: int

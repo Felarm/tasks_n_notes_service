@@ -4,7 +4,7 @@ from typing import Optional
 import pytest
 
 from exceptions import ResourceNotFoundException
-from schemas.event import TaskCreateEvent, NoteCreateEvent
+from schemas.event import TaskEvent, NoteEvent, EventType
 from schemas.note import NoteCreate
 from schemas.task import TaskDateTimeFilter, TaskCreate
 from schemas.token import AccessTokenPayload
@@ -48,13 +48,13 @@ class TestUserService:
         assert new_task.user_id == 1
         outbox_msgs = await outbox_repo.get_unprocessed_messages()
         assert len(outbox_msgs) == 1
-        msg_event = TaskCreateEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
+        msg_event = TaskEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
         assert msg_event.id == new_task.id
         assert msg_event.start_dt == new_task.start_dt
         assert msg_event.end_dt == new_task.end_dt
         assert msg_event.user_id == 1
         assert msg_event.username == access_token_payload.username
-        assert msg_event.event_type == "create_task"
+        assert msg_event.event_type == EventType.CREATE
 
     @pytest.mark.asyncio
     async def test_delete_task(self, tasks_service, test_tasks):
@@ -95,7 +95,7 @@ class TestNoteService:
         assert new_note.remind_at == new_note_data.remind_at.astimezone(UTC)
         outbox_msgs = await outbox_repo.get_unprocessed_messages()
         assert len(outbox_msgs) == 1
-        msg_payload = NoteCreateEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
+        msg_payload = NoteEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
         assert msg_payload.user_id == 1
         assert msg_payload.username == access_token_payload.username
         assert msg_payload.remind_at == new_note.remind_at

@@ -4,7 +4,7 @@ from fastapi import APIRouter, status, Depends
 from fastapi.params import Query
 
 from dependencies import get_user_data, get_task_service
-from schemas.task import TaskModelResponse, TaskDateTimeFilter, TaskCreate
+from schemas.task import TaskModel, TaskDateTimeFilter, TaskCreate
 from schemas.token import AccessTokenPayload
 from services.task import TaskService
 
@@ -13,7 +13,7 @@ JWTUserData = Annotated[AccessTokenPayload, Depends(get_user_data)]
 TaskService_ = Annotated[TaskService, Depends(get_task_service)]
 
 
-@router.get("/", response_model=list[TaskModelResponse], status_code=status.HTTP_200_OK)
+@router.get("/", response_model=list[TaskModel], status_code=status.HTTP_200_OK)
 async def get_user_tasks(
         user_data: JWTUserData,
         task_service: TaskService_,
@@ -22,7 +22,7 @@ async def get_user_tasks(
     return await task_service.get_user_tasks(int(user_data.sub), filter_params)
 
 
-@router.post("/", response_model=TaskModelResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/", response_model=TaskModel, status_code=status.HTTP_201_CREATED)
 async def create_user_task(
         user_data: JWTUserData,
         task_service: TaskService_,
