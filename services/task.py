@@ -5,7 +5,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions import ResourceNotFoundException
 from repositories.task import TaskRepository
-from schemas.task import TaskDateTimeFilter, TaskModel, TaskCreate
+from schemas.task import TaskDateTimeFilter, TaskModel, TaskCreate, TaskUpdate
 from schemas.token import AccessTokenPayload
 from services.event import EventService
 
@@ -24,7 +24,7 @@ class TaskService:
         elif filter_ and (filter_.start_dt and filter_.end_dt):
             tasks = await self.task_repo.get_user_tasks_for_period(user_id, filter_.start_dt.astimezone(UTC), filter_.end_dt.astimezone(UTC))
         else:
-            tasks = await self.task_repo.get_user_tasks(user_id)
+            tasks = await self.task_repo.get_all_user_tasks(user_id)
         return [TaskModel.model_validate(_) for _ in tasks]
 
     async def create_user_task(self, user_data: AccessTokenPayload, new_task: TaskCreate) -> TaskModel:
@@ -41,4 +41,9 @@ class TaskService:
         await self.task_repo.delete_task(task)
         await self.db_session.commit()
 
-
+    async def update_task(self, task_id: int, update_data: TaskUpdate) -> None:
+        task = await self.task_repo.get_task_by_id(task_id)
+        if not task:
+            raise ResourceNotFoundException(f"Task with {task_id=} not found")
+        self.task_repo.update_task(task, update_data.model_dump(exclude_unset=True))
+        await self.db_session.commit()

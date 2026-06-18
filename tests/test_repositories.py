@@ -1,7 +1,7 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, UTC
 
 import pytest
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, DBAPIError
 
 from models.task import TaskState
 
@@ -38,10 +38,10 @@ class TestTaskRepository:
 
     @pytest.mark.asyncio
     async def test_get_user_tasks(self, tasks_repo, test_tasks):
-        user_tasks = await tasks_repo.get_user_tasks(user_id=1)
+        user_tasks = await tasks_repo.get_all_user_tasks(user_id=1)
         for task in user_tasks:
             assert task in test_tasks
-        empty_res = await tasks_repo.get_user_tasks(user_id=9999)
+        empty_res = await tasks_repo.get_all_user_tasks(user_id=9999)
         assert len(empty_res) == 0
 
     @pytest.mark.asyncio
@@ -57,25 +57,49 @@ class TestTaskRepository:
         assert len(curr_user_tasks) == 1
 
     @pytest.mark.asyncio
-    @pytest.mark.parametrize("test_state", [TaskState.in_progress, TaskState.failed, TaskState.done])
-    async def test_get_user_tasks_by_state(self, tasks_repo, test_tasks, test_state):
-        user_tasks = await tasks_repo.get_user_tasks_by_state(user_id=1, state=test_state)
-        assert len(user_tasks) == 1
-        assert user_tasks[0].state == test_state
-
-    @pytest.mark.asyncio
     async def test_delete_task(self, tasks_repo, test_tasks):
         await tasks_repo.delete_task(test_tasks[0])
         # await tasks_repo.db.commit()
-        user_tasks = await tasks_repo.get_user_tasks(user_id=1)
+        user_tasks = await tasks_repo.get_all_user_tasks(user_id=1)
         assert len(user_tasks) == 2
 
     @pytest.mark.asyncio
-    async def test_set_state(self, tasks_repo, test_tasks):
-        tasks_repo.set_state(test_tasks[0], TaskState.created)
-        # await tasks_repo.db.commit()
-        done_tasks = await tasks_repo.get_user_tasks_by_state(user_id=1, state=TaskState.done)
-        assert len(done_tasks) == 1
+    @pytest.mark.parametrize(
+        argnames="test_update_data",
+        argvalues=[
+            {"name": "updated_test"},
+            {"name": "updated_test", "description": "updated_description"},
+            {"start_dt": datetime.now(), "end_dt": datetime.now() + timedelta(minutes=5)},
+            {"assignee_id": 9999},
+            {"state": TaskState.done}
+        ]
+    )
+    async def test_update_task_success(
+            self, tasks_repo, test_tasks, test_update_data: dict[str, str | datetime]
+    ):
+        tasks_repo.update_task(test_tasks[0], test_update_data)
+        await tasks_repo.db.commit()
+        await tasks_repo.db.refresh(test_tasks[0])
+        for k, v in test_update_data.items():
+            if isinstance(v, datetime):
+                v = v.astimezone(UTC)
+            assert getattr(test_tasks[0], k) == v
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        argnames="test_update_data",
+        argvalues=[
+            {"start_dt": datetime.now(UTC) + timedelta(minutes=5), "end_dt": datetime.now(UTC)},
+            {"assignee_id": "9999"},
+            {"start_dt": datetime.now() + timedelta(days=100)},
+        ]
+    )
+    async def test_update_task_fail(
+            self, tasks_repo, test_tasks, test_update_data: dict[str, datetime | str]
+    ):
+        tasks_repo.update_task(test_tasks[0], test_update_data)
+        with pytest.raises((IntegrityError, DBAPIError)):
+            await tasks_repo.db.commit()
 
 
 class TestNoteRepository:

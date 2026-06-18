@@ -6,7 +6,7 @@ from fastapi import status
 
 from main import app
 from schemas.note import NoteModel, NoteCreate
-from schemas.task import TaskCreate, TaskModel, TaskDateTimeFilter
+from schemas.task import TaskCreate, TaskModel, TaskDateTimeFilter, TaskUpdate
 from tests.conftest import auth_header
 
 
@@ -41,7 +41,8 @@ class TestTaskApi:
         argvalues=[
             ("get", app.url_path_for("get_user_tasks")),
             ("post", app.url_path_for("create_user_task")),
-            ("delete", app.url_path_for("delete_user_task", task_id=9999))
+            ("delete", app.url_path_for("delete_user_task", task_id=9999)),
+            ("post", app.url_path_for("update_user_task", task_id=9999))
         ]
     )
     async def test_unauthorized_exception(self, async_client, url_paths_n_methods):
@@ -80,6 +81,22 @@ class TestTaskApi:
         response = await async_client.delete(
             url=app.url_path_for("delete_user_task", task_id=99999),
             headers=auth_header
+        )
+        assert response.status_code == status.HTTP_404_NOT_FOUND
+
+    @pytest.mark.asyncio
+    async def test_update_user_task(self, async_client, test_tasks, auth_header):
+        update_data = TaskUpdate(name="new task name")
+        response = await async_client.post(
+            url=app.url_path_for(f"update_user_task", task_id=test_tasks[0].id),
+            headers={"content-type": "application/json", **auth_header},
+            content=update_data.model_dump_json(exclude_unset=True),
+        )
+        assert response.status_code == status.HTTP_200_OK
+        response = await async_client.post(
+            url=app.url_path_for(f"update_user_task", task_id=99999),
+            headers={"content-type": "application/json", **auth_header},
+            content=update_data.model_dump_json(),
         )
         assert response.status_code == status.HTTP_404_NOT_FOUND
 

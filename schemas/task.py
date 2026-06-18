@@ -1,7 +1,7 @@
 from datetime import datetime, date
 from typing import Optional
 
-from pydantic import BaseModel, ConfigDict, model_validator, AwareDatetime
+from pydantic import BaseModel, ConfigDict, model_validator
 
 
 class TaskCreate(BaseModel):
@@ -9,6 +9,16 @@ class TaskCreate(BaseModel):
     description: Optional[str] = None
     start_dt: datetime
     end_dt: datetime
+    assignee_id: Optional[int] = None
+
+
+class TaskUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    start_dt: Optional[datetime] = None
+    end_dt: Optional[datetime] = None
+    assignee_id: Optional[int] = None
+    model_config = ConfigDict(extra="forbid")
 
 
 class TaskModel(TaskCreate):

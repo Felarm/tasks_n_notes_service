@@ -24,6 +24,7 @@ class TaskEvent(BaseEvent):
     description: Optional[str] = None
     start_dt: datetime
     end_dt: datetime
+    assignee_id: Optional[int] = None
 
 
 class NoteEvent(BaseEvent):

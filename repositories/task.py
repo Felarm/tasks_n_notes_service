@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.task import Task, TaskState
+from models.task import Task
 
 
 class TaskRepository:
@@ -18,6 +18,7 @@ class TaskRepository:
             start_dt: datetime,
             end_dt: datetime,
             description: str | None = None,
+            assignee_id: int | None = None,
     ) -> Task:
         new_task = Task(
             user_id=user_id,
@@ -25,6 +26,7 @@ class TaskRepository:
             start_dt=start_dt.astimezone(UTC),
             end_dt=end_dt.astimezone(UTC),
             description=description,
+            assignee_id = assignee_id or user_id,
         )
         self.db.add(new_task)
         await self.db.flush()
@@ -34,7 +36,7 @@ class TaskRepository:
         res = await self.db.execute(select(Task).where(Task.id == id_))
         return res.scalar_one_or_none()
 
-    async def get_user_tasks(self, user_id: int) -> Sequence[Task]:
+    async def get_all_user_tasks(self, user_id: int) -> Sequence[Task]:
         res = await self.db.execute(select(Task).where(Task.user_id == user_id))
         return res.scalars().all()
 
@@ -43,13 +45,23 @@ class TaskRepository:
         res = await self.db.execute(q)
         return res.scalars().all()
 
-    async def get_user_tasks_by_state(self, user_id: int, state: TaskState) -> Sequence[Task]:
-        res = await self.db.execute(select(Task).where(Task.user_id == user_id).where(Task.state == state))
-        return res.scalars().all()
-
     async def delete_task(self, task: Task) -> None:
         await self.db.delete(task)
 
-    def set_state(self, task: Task, state: TaskState) -> None:
-        task.state = state
+    def update_task(self, task: Task, update_data: dict[str, str | datetime]):
+        for k, v in update_data.items():
+            if not hasattr(task, k):
+                continue
+            if isinstance(v, datetime) and v.tzinfo is None:
+                v = v.astimezone(UTC)
+            setattr(task, k, v)
         self.db.add(task)
+
+    async def get_tasks_by_params(self, get_params: dict) -> Sequence[Task]:
+        q = select(Task)
+        for k, v in get_params.items():
+            if not hasattr(Task, k):
+                continue
+            q = q.where(getattr(Task, k) == v)
+        res = await self.db.execute(q)
+        return res.scalars().all()

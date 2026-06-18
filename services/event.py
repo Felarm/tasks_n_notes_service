@@ -39,6 +39,7 @@ class EventService:
             start_dt=new_task.start_dt,
             end_dt=new_task.end_dt,
             event_type=EventType.CREATE,
+            assignee_id=new_task.assignee_id,
         )
         self.outbox_repo.create_message(
             topic=settings.TASKS_TOPIC_NAME,

@@ -1,7 +1,7 @@
 import enum
 from datetime import datetime
 
-from sqlalchemy import CheckConstraint, DateTime, Enum
+from sqlalchemy import CheckConstraint, DateTime, Enum, Integer
 from sqlalchemy.orm import Mapped, mapped_column
 
 from database import TaskAndNoteBase
@@ -25,3 +25,4 @@ class Task(TaskAndNoteBase):
     state: Mapped[TaskState] = mapped_column(Enum(TaskState), default=TaskState.created, nullable=False)
     real_start_dt: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     real_end_dt: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    assignee_id: Mapped[int] = mapped_column(Integer, nullable=True)

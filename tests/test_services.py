@@ -6,12 +6,12 @@ import pytest
 from exceptions import ResourceNotFoundException
 from schemas.event import TaskEvent, NoteEvent, EventType
 from schemas.note import NoteCreate
-from schemas.task import TaskDateTimeFilter, TaskCreate
+from schemas.task import TaskDateTimeFilter, TaskCreate, TaskUpdate
 from schemas.token import AccessTokenPayload
 from services.security import JWTService
 
 
-class TestUserService:
+class TestTaskService:
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
         argnames="test_filter",
@@ -63,6 +63,19 @@ class TestUserService:
         assert len(tasks_from_db) < len(test_tasks)
         with pytest.raises(ResourceNotFoundException):
             await tasks_service.delete_task(9999)
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        argnames="test_update_data",
+        argvalues=[
+            TaskUpdate(name="updated_name"),
+            TaskUpdate(end_dt=datetime.now() + timedelta(days=100))
+        ]
+    )
+    async def test_update_task(self, tasks_service, test_tasks, test_update_data: TaskUpdate):
+        await tasks_service.update_task(test_tasks[0].id, test_update_data)
+        with pytest.raises(ResourceNotFoundException):
+            await tasks_service.update_task(9999, test_update_data)
 
 
 class TestNoteService:

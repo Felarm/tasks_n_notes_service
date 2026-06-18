@@ -14,7 +14,7 @@ from dependencies import get_db_session
 from main import app
 from models.note import Note
 from models.outbox import OutboxMessage
-from models.task import Task, TaskState
+from models.task import Task
 from repositories.note import NoteRepository
 from repositories.outbox import OutboxRepository
 from repositories.task import TaskRepository
@@ -50,10 +50,9 @@ def tasks_repo(db_session) -> TaskRepository:
 @pytest_asyncio.fixture(scope="function")
 async def test_tasks(tasks_repo) -> list[Task]:
     res = list()
-    for task_name, period, state in zip(
+    for task_name, period in zip(
         ["test_task_1", "test_task_2", "test_task_3"],
         [(0, 5), (10, 15), (30, 45)],
-        [TaskState.in_progress, TaskState.failed, TaskState.done],
     ):
         new_task = await tasks_repo.create_task(
             user_id=1,
@@ -61,7 +60,6 @@ async def test_tasks(tasks_repo) -> list[Task]:
             start_dt=datetime.now(UTC) + timedelta(minutes=period[0]),
             end_dt=datetime.now(UTC) + timedelta(minutes=period[1]),
         )
-        tasks_repo.set_state(new_task, state)
         res.append(new_task)
     await tasks_repo.db.commit()
     return res
