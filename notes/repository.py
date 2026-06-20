@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.note import Note
+from notes.models import Note
 
 
 class NoteRepository:

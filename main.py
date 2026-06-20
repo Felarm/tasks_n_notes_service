@@ -2,8 +2,8 @@ from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from loguru import logger
 
-from api.v1.task import router as tasks_router
-from api.v1.note import router as notes_router
+from tasks.routers import router as tasks_router
+from notes.routers import router as notes_router
 from exceptions import BaseAppException
 
 

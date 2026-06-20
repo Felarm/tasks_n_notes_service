@@ -4,9 +4,9 @@ from fastapi import APIRouter, status, Depends
 from fastapi.params import Query
 
 from dependencies import get_user_data, get_task_service
-from schemas.task import TaskModel, TaskDateTimeFilter, TaskCreate, TaskUpdate
-from schemas.token import AccessTokenPayload
-from services.task import TaskService
+from tasks.schemas import TaskModel, TaskDateTimeFilter, TaskCreate, TaskUpdate
+from tokens.schemas import AccessTokenPayload
+from tasks.service import TaskService
 
 router = APIRouter(prefix="/tasks", tags=["Tasks"])
 JWTUserData = Annotated[AccessTokenPayload, Depends(get_user_data)]

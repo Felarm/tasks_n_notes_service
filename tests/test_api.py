@@ -5,8 +5,8 @@ import pytest
 from fastapi import status
 
 from main import app
-from schemas.note import NoteModel, NoteCreate
-from schemas.task import TaskCreate, TaskModel, TaskDateTimeFilter, TaskUpdate
+from notes.schemas import NoteModel, NoteCreate
+from tasks.schemas import TaskCreate, TaskModel, TaskDateTimeFilter, TaskUpdate
 from tests.conftest import auth_header
 
 

@@ -1,10 +1,10 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions import ResourceNotFoundException
-from repositories.note import NoteRepository
-from schemas.note import NoteModel, NoteCreate
-from schemas.token import AccessTokenPayload
-from services.event import EventService
+from notes.repository import NoteRepository
+from notes.schemas import NoteModel, NoteCreate
+from tokens.schemas import AccessTokenPayload
+from events.service import EventService
 
 
 class NoteService:

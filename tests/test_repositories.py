@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, UTC
 import pytest
 from sqlalchemy.exc import IntegrityError, DBAPIError
 
-from models.task import TaskState
+from tasks.models import TaskState
 
 
 class TestTaskRepository:

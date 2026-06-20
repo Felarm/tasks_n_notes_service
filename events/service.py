@@ -1,11 +1,11 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from config import settings
-from repositories.outbox import OutboxRepository
-from schemas.event import NoteEvent, TaskEvent, EventType
-from schemas.note import NoteModel
-from schemas.task import TaskModel
-from schemas.token import AccessTokenPayload
+from events.repository import OutboxRepository
+from events.schemas import NoteEvent, TaskEvent, EventType
+from notes.schemas import NoteModel
+from tasks.schemas import TaskModel
+from tokens.schemas import AccessTokenPayload
 
 
 class EventService:

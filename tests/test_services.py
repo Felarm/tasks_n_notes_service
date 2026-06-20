@@ -4,11 +4,11 @@ from typing import Optional
 import pytest
 
 from exceptions import ResourceNotFoundException
-from schemas.event import TaskEvent, NoteEvent, EventType
-from schemas.note import NoteCreate
-from schemas.task import TaskDateTimeFilter, TaskCreate, TaskUpdate
-from schemas.token import AccessTokenPayload
-from services.security import JWTService
+from events.schemas import TaskEvent, NoteEvent, EventType
+from notes.schemas import NoteCreate
+from tasks.schemas import TaskDateTimeFilter, TaskCreate, TaskUpdate
+from tokens.schemas import AccessTokenPayload
+from tokens.service import JWTService
 
 
 class TestTaskService:

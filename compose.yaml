@@ -19,7 +19,7 @@ services:
     build: .
     container_name: task_n_note_service_outbox_workers
     command: >
-      bash -c "PYTHONPATH=/app .venv/bin/python run_outbox.py"
+      bash -c "PYTHONPATH=/app .venv/bin/python events/outbox/run_outbox.py"
     env_file:
       - .env_app
     depends_on:

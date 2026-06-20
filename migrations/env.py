@@ -6,13 +6,12 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
 from alembic import context
-from sqlalchemy.orm import DeclarativeBase
 
 from config import settings
 from database import Base
-from models.note import Note
-from models.task import Task
-from models.outbox import OutboxMessage
+from tasks.models import Task
+from notes.models import Note
+from events.models import OutboxMessage
 
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.

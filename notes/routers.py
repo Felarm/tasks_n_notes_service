@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, status, Depends
 
 from dependencies import get_user_data, get_note_service
-from schemas.note import NoteModel, NoteCreate
-from schemas.token import AccessTokenPayload
-from services.note import NoteService
+from notes.schemas import NoteModel, NoteCreate
+from tokens.schemas import AccessTokenPayload
+from notes.service import NoteService
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 JWTUserData = Annotated[AccessTokenPayload, Depends(get_user_data)]

@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 from sqlalchemy import select, delete, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.outbox import OutboxMessage
+from events.models import OutboxMessage
 
 
 class OutboxRepository:

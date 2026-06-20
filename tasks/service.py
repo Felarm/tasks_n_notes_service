@@ -4,10 +4,10 @@ from typing import Optional
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from exceptions import ResourceNotFoundException
-from repositories.task import TaskRepository
-from schemas.task import TaskDateTimeFilter, TaskModel, TaskCreate, TaskUpdate
-from schemas.token import AccessTokenPayload
-from services.event import EventService
+from tasks.repository import TaskRepository
+from tasks.schemas import TaskDateTimeFilter, TaskModel, TaskCreate, TaskUpdate
+from tokens.schemas import AccessTokenPayload
+from events.service import EventService
 
 
 class TaskService:

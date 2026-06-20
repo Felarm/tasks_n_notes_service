@@ -4,8 +4,8 @@ from loguru import logger
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
 from config import settings
-from kafka import task_events_publisher, note_events_publisher
-from repositories.outbox import OutboxRepository
+from events.broker import task_events_publisher, note_events_publisher
+from events.repository import OutboxRepository
 
 
 async def process_outbox_messages(outbox_repo: OutboxRepository) -> None:

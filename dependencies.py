@@ -5,10 +5,10 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from database import async_session_maker
-from schemas.token import AccessTokenPayload
-from services.note import NoteService
-from services.security import JWTService
-from services.task import TaskService
+from tokens.schemas import AccessTokenPayload
+from notes.service import NoteService
+from tokens.service import JWTService
+from tasks.service import TaskService
 
 jwt_bearer = HTTPBearer()
 

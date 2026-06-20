@@ -3,7 +3,7 @@ import asyncio
 from loguru import logger
 from sqlalchemy.ext.asyncio import async_sessionmaker
 
-from repositories.outbox import OutboxRepository
+from events.repository import OutboxRepository
 
 
 async def outbox_cleaner(session_maker: async_sessionmaker):
