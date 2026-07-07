@@ -36,19 +36,19 @@ class TaskService:
         return task_response
 
     async def delete_task(self, user_data: AccessTokenPayload, task_id: int) -> None:
-        task = await self.task_repo.get_task_by_id(task_id)
-        if not task:
-            raise ResourceNotFoundException(f"Task with {task_id=} not found")
-        task_model = TaskModel.model_validate(task)
         async with self.db_session.begin():
+            task = await self.task_repo.get_task_by_id(task_id)
+            if not task:
+                raise ResourceNotFoundException(f"Task with {task_id=} not found")
+            task_model = TaskModel.model_validate(task)
             self.event_service.create_task_event(user_data, task_model, EventType.DELETE)
             await self.task_repo.delete_task(task)
 
     async def update_task(self, user_data: AccessTokenPayload, task_id: int, update_data: TaskUpdate) -> None:
-        task = await self.task_repo.get_task_by_id(task_id)
-        if not task:
-            raise ResourceNotFoundException(f"Task with {task_id=} not found")
-        task_model = TaskModel.model_validate(task)
         async with self.db_session.begin():
+            task = await self.task_repo.get_task_by_id(task_id)
+            if not task:
+                raise ResourceNotFoundException(f"Task with {task_id=} not found")
+            task_model = TaskModel.model_validate(task)
             self.task_repo.update_task(task, update_data.model_dump(exclude_unset=True))
             self.event_service.create_task_event(user_data, task_model, EventType.UPDATE)

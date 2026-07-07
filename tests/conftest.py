@@ -1,6 +1,5 @@
 from datetime import datetime, UTC, timedelta
 from typing import Any, AsyncGenerator
-from uuid import uuid4
 
 import pytest
 import pytest_asyncio

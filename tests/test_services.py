@@ -57,12 +57,15 @@ class TestTaskService:
         assert msg_event.event_type == EventType.CREATE
 
     @pytest.mark.asyncio
-    async def test_delete_task(self, tasks_service, test_tasks):
-        await tasks_service.delete_task(test_tasks[0].id)
+    async def test_delete_task(self, tasks_service, test_tasks, access_token_payload):
+        await tasks_service.delete_task(access_token_payload, test_tasks[0].id)
         tasks_from_db = await tasks_service.get_user_tasks(user_id=1)
         assert len(tasks_from_db) < len(test_tasks)
+
+    @pytest.mark.asyncio
+    async def test_delete_task_exception(self, tasks_service, test_tasks, access_token_payload):
         with pytest.raises(ResourceNotFoundException):
-            await tasks_service.delete_task(9999)
+            await tasks_service.delete_task(access_token_payload, 9999)
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -72,10 +75,17 @@ class TestTaskService:
             TaskUpdate(end_dt=datetime.now() + timedelta(days=100))
         ]
     )
-    async def test_update_task(self, tasks_service, test_tasks, test_update_data: TaskUpdate):
-        await tasks_service.update_task(test_tasks[0].id, test_update_data)
+    async def test_update_task(
+            self,
+            tasks_service,
+            test_tasks,
+            test_update_data:
+            TaskUpdate,
+            access_token_payload: AccessTokenPayload
+    ):
+        await tasks_service.update_task(access_token_payload, test_tasks[0].id, test_update_data)
         with pytest.raises(ResourceNotFoundException):
-            await tasks_service.update_task(9999, test_update_data)
+            await tasks_service.update_task(access_token_payload, 9999, test_update_data)
 
 
 class TestNoteService:
