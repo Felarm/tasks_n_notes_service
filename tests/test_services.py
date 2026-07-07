@@ -131,4 +131,3 @@ class TestJWTService:
         assert access_token_payload.username == "test_user"
         assert access_token_payload.tg_id == 1111
         assert access_token_payload.exp <= int((datetime.now(UTC) + timedelta(minutes=15)).timestamp())
-        assert access_token_payload.type == "access"

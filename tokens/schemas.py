@@ -8,6 +8,3 @@ class AccessTokenPayload(BaseModel):
     username: str
     tg_id: Optional[int] = None
     exp: int  # timestamp expires
-    iat: int  # timestamp issued at
-    type: str = "access"
-    jti: str

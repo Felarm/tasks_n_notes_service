@@ -14,8 +14,6 @@ class JWTService:
             payload = AccessTokenPayload(**jwt.decode(encoded_token, settings.SECRET_KEY, settings.ALGORITHM))
         except JWTError as e:
             raise UnauthorizedException("Wrong token data") from e
-        if payload.type != "access":
-            raise UnauthorizedException("Wrong token type")
         if payload.exp < int(datetime.now(UTC).timestamp()):
             raise UnauthorizedException("Expired token")
         return payload

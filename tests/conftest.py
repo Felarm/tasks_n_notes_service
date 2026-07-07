@@ -117,9 +117,6 @@ def access_token_payload() -> AccessTokenPayload:
         username="test_user",
         tg_id=1111,
         exp=int((datetime.now(UTC) + timedelta(minutes=15)).timestamp()),
-        iat=int(datetime.now(UTC).timestamp()),
-        type="access",
-        jti=str(uuid4()),
     )
 
 @pytest.fixture(scope="function")
