@@ -28,7 +28,7 @@ class EventService:
             jsoned_payload=event_payload.model_dump_json(),
         )
 
-    def create_task_event(self, user_data: AccessTokenPayload, new_task: TaskModel):
+    def create_task_event(self, user_data: AccessTokenPayload, new_task: TaskModel, event_type: EventType):
         event_payload = TaskEvent(
             id=new_task.id,
             user_id=int(user_data.sub),
@@ -38,7 +38,7 @@ class EventService:
             description=new_task.description,
             start_dt=new_task.start_dt,
             end_dt=new_task.end_dt,
-            event_type=EventType.CREATE,
+            event_type=event_type,
             assignee_id=new_task.assignee_id,
         )
         self.outbox_repo.create_message(
