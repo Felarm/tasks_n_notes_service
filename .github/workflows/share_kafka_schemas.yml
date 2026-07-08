@@ -15,14 +15,14 @@ jobs:
       - name: Checkout notifier service
         uses: actions/checkout@v4
         with:
-          repository: "Felarm/notifier"
+          repository: ${{ vars.NOTIFIER_REPO }}
           token: ${{ secrets.CROSS_REPO_TOKEN }}
           path: "resource-service-dir"
 
       - name: Copy schemas
         run: |
           mkdir -p resource-service-dir/schemas
-          cp schemas/event.py resource-service-dir/schemas/task_n_note_service_events.py
+          cp events/schemas.py resource-service-dir/schemas/task_n_note_service_events.py
 
       - name: Create PR in notifier repo
         uses: peter-evans/create-pull-request@v6
