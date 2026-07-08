@@ -16,3 +16,10 @@ class NoteModel(NoteCreate):
     created_at: datetime
     updated_at: datetime
     model_config = ConfigDict(from_attributes=True)
+
+
+class NoteUpdate(BaseModel):
+    name: Optional[str] = None
+    description: Optional[str] = None
+    remind_at: Optional[datetime] = None
+    model_config = ConfigDict(extra="forbid")

@@ -12,7 +12,7 @@ class EventService:
     def __init__(self, db_session: AsyncSession):
         self.outbox_repo = OutboxRepository(db_session)
 
-    def create_note_event(self, user_data: AccessTokenPayload, new_note: NoteModel):
+    def create_note_event(self, user_data: AccessTokenPayload, new_note: NoteModel, event_type: EventType):
         event_payload = NoteEvent(
             id=new_note.id,
             user_id=int(user_data.sub),
@@ -21,7 +21,7 @@ class EventService:
             name=new_note.name,
             description=new_note.description,
             remind_at=new_note.remind_at,
-            event_type=EventType.CREATE,
+            event_type=event_type,
         )
         self.outbox_repo.create_message(
             topic=settings.NOTES_TOPIC_NAME,
