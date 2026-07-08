@@ -3,7 +3,7 @@ from datetime import datetime, timedelta, UTC
 import pytest
 from sqlalchemy.exc import IntegrityError, DBAPIError
 
-from models.task import TaskState
+from tasks.models import TaskState
 
 
 class TestTaskRepository:
@@ -157,6 +157,23 @@ class TestNoteRepository:
         await notes_repo.db.commit()
         user_notes = await notes_repo.get_all_user_notes(user_id=1)
         assert len(user_notes) == 2
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        argnames="update_data",
+        argvalues=[
+            {"remind_at": datetime.now() + timedelta(minutes=5)},
+            {"name": "new_note", "description": "new_description"},
+        ],
+    )
+    async def test_update_note(self, notes_repo, test_notes, update_data):
+        notes_repo.update_note(test_notes[0], update_data)
+        await notes_repo.db.commit()
+        await notes_repo.db.refresh(test_notes[0])
+        for k, v in update_data.items():
+            if isinstance(v, datetime):
+                v = v.astimezone(UTC)
+            assert getattr(test_notes[0], k) == v
 
 
 class TestOutboxRepository:

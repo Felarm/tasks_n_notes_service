@@ -1,6 +1,5 @@
 from datetime import datetime, UTC, timedelta
 from typing import Any, AsyncGenerator
-from uuid import uuid4
 
 import pytest
 import pytest_asyncio
@@ -12,15 +11,15 @@ from config import settings
 from database import Base
 from dependencies import get_db_session
 from main import app
-from models.note import Note
-from models.outbox import OutboxMessage
-from models.task import Task
-from repositories.note import NoteRepository
-from repositories.outbox import OutboxRepository
-from repositories.task import TaskRepository
-from schemas.token import AccessTokenPayload
-from services.note import NoteService
-from services.task import TaskService
+from notes.models import Note
+from events.models import OutboxMessage
+from tasks.models import Task
+from notes.repository import NoteRepository
+from events.repository import OutboxRepository
+from tasks.repository import TaskRepository
+from tokens.schemas import AccessTokenPayload
+from notes.service import NoteService
+from tasks.service import TaskService
 
 
 @pytest_asyncio.fixture(scope="function")
@@ -117,9 +116,6 @@ def access_token_payload() -> AccessTokenPayload:
         username="test_user",
         tg_id=1111,
         exp=int((datetime.now(UTC) + timedelta(minutes=15)).timestamp()),
-        iat=int(datetime.now(UTC).timestamp()),
-        type="access",
-        jti=str(uuid4()),
     )
 
 @pytest.fixture(scope="function")

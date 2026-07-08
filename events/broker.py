@@ -3,7 +3,7 @@ from faststream.kafka import KafkaBroker
 from config import settings
 
 
-broker = KafkaBroker(
+kafka_broker = KafkaBroker(
     bootstrap_servers=settings.KAFKA_URL,
     client_id=settings.CLIENT_ID,
     acks="all",
@@ -12,5 +12,5 @@ broker = KafkaBroker(
 )
 
 
-task_events_publisher = broker.publisher("task_events")
-note_events_publisher = broker.publisher("note_events")
+task_events_publisher = kafka_broker.publisher("task_events")
+note_events_publisher = kafka_broker.publisher("note_events")

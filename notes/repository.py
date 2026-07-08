@@ -4,7 +4,7 @@ from typing import Optional, Sequence
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models.note import Note
+from notes.models import Note
 
 
 class NoteRepository:
@@ -53,3 +53,13 @@ class NoteRepository:
 
     async def delete_note(self, note: Note) -> None:
         await self.db.delete(note)
+
+    def update_note(self, note: Note, update_data: dict[str, str | datetime]) -> None:
+        for k, v in update_data.items():
+            if not hasattr(note, k):
+                continue
+            if isinstance(v, datetime) and v.tzinfo is None:
+                v = v.astimezone(UTC)
+            setattr(note, k, v)
+        self.db.add(note)
+

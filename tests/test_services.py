@@ -4,11 +4,11 @@ from typing import Optional
 import pytest
 
 from exceptions import ResourceNotFoundException
-from schemas.event import TaskEvent, NoteEvent, EventType
-from schemas.note import NoteCreate
-from schemas.task import TaskDateTimeFilter, TaskCreate, TaskUpdate
-from schemas.token import AccessTokenPayload
-from services.security import JWTService
+from events.schemas import TaskEvent, NoteEvent, EventType
+from notes.schemas import NoteCreate, NoteUpdate
+from tasks.schemas import TaskDateTimeFilter, TaskCreate, TaskUpdate
+from tokens.schemas import AccessTokenPayload
+from tokens.service import JWTService
 
 
 class TestTaskService:
@@ -57,12 +57,33 @@ class TestTaskService:
         assert msg_event.event_type == EventType.CREATE
 
     @pytest.mark.asyncio
-    async def test_delete_task(self, tasks_service, test_tasks):
-        await tasks_service.delete_task(test_tasks[0].id)
+    async def test_delete_task(
+            self,
+            tasks_service,
+            test_tasks,
+            access_token_payload,
+            outbox_repo
+    ):
+        await tasks_service.delete_task(access_token_payload, test_tasks[0].id)
         tasks_from_db = await tasks_service.get_user_tasks(user_id=1)
         assert len(tasks_from_db) < len(test_tasks)
+        outbox_msgs = await outbox_repo.get_unprocessed_messages()
+        assert len(outbox_msgs) == 1
+        msg_event = TaskEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
+        assert msg_event.event_type == EventType.DELETE
+
+    @pytest.mark.asyncio
+    async def test_delete_task_exception(
+            self,
+            tasks_service,
+            test_tasks,
+            access_token_payload,
+            outbox_repo
+    ):
         with pytest.raises(ResourceNotFoundException):
-            await tasks_service.delete_task(9999)
+            await tasks_service.delete_task(access_token_payload, 9999)
+            outbox_msgs = await outbox_repo.get_unprocessed_messages()
+            assert len(outbox_msgs) == 0
 
     @pytest.mark.asyncio
     @pytest.mark.parametrize(
@@ -72,10 +93,31 @@ class TestTaskService:
             TaskUpdate(end_dt=datetime.now() + timedelta(days=100))
         ]
     )
-    async def test_update_task(self, tasks_service, test_tasks, test_update_data: TaskUpdate):
-        await tasks_service.update_task(test_tasks[0].id, test_update_data)
+    async def test_update_task(
+            self,
+            tasks_service,
+            test_tasks,
+            test_update_data: TaskUpdate,
+            access_token_payload: AccessTokenPayload,
+            outbox_repo,
+    ):
+        await tasks_service.update_task(access_token_payload, test_tasks[0].id, test_update_data)
+        outbox_msgs = await outbox_repo.get_unprocessed_messages()
+        assert len(outbox_msgs) == 1
+        msg_event = TaskEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
+        assert msg_event.event_type == EventType.UPDATE
+
+    @pytest.mark.asyncio
+    async def test_update_task_exception(
+            self,
+            tasks_service,
+            outbox_repo,
+            access_token_payload,
+    ):
         with pytest.raises(ResourceNotFoundException):
-            await tasks_service.update_task(9999, test_update_data)
+            await tasks_service.update_task(access_token_payload, 9999, TaskUpdate(name="fail update"))
+            outbox_msgs = await outbox_repo.get_unprocessed_messages()
+            assert len(outbox_msgs) == 0
 
 
 class TestNoteService:
@@ -112,15 +154,70 @@ class TestNoteService:
         assert msg_payload.user_id == 1
         assert msg_payload.username == access_token_payload.username
         assert msg_payload.remind_at == new_note.remind_at
+        assert msg_payload.event_type == EventType.CREATE
 
     @pytest.mark.asyncio
-    async def test_delete_user_note(self, notes_service, test_notes):
-        delete_id = test_notes[0].id
-        await notes_service.delete_user_note(delete_id)
-        user_notes = await notes_service.get_all_user_notes(user_id=1)
-        assert len(user_notes) < len(test_notes)
+    async def test_delete_note(
+            self,
+            notes_service,
+            test_notes,
+            access_token_payload,
+            outbox_repo,
+    ):
+        await notes_service.delete_user_note(access_token_payload, test_notes[0].id)
+        notes_from_db = await notes_service.get_all_user_notes(user_id=1)
+        assert len(notes_from_db) < len(test_notes)
+        outbox_msgs = await outbox_repo.get_unprocessed_messages()
+        assert len(outbox_msgs) == 1
+        msg_payload = NoteEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
+        assert msg_payload.event_type == EventType.DELETE
+
+    @pytest.mark.asyncio
+    async def test_delete_note_exception(
+            self,
+            notes_service,
+            test_notes,
+            access_token_payload,
+            outbox_repo
+    ):
         with pytest.raises(ResourceNotFoundException):
-            await notes_service.delete_user_note(9999)
+            await notes_service.delete_user_note(access_token_payload, 9999)
+        outbox_msgs = await outbox_repo.get_unprocessed_messages()
+        assert len(outbox_msgs) == 0
+
+    @pytest.mark.asyncio
+    @pytest.mark.parametrize(
+        argnames="test_update_data",
+        argvalues=[
+            NoteUpdate(name="updated_name", description="test_description"),
+            NoteUpdate(remind_at=datetime.now() + timedelta(days=100))
+        ]
+    )
+    async def test_update_note(
+            self,
+            notes_service,
+            test_notes,
+            test_update_data: NoteUpdate,
+            access_token_payload: AccessTokenPayload,
+            outbox_repo
+    ):
+        await notes_service.update_user_note(access_token_payload, test_notes[0].id, test_update_data)
+        outbox_msgs = await outbox_repo.get_unprocessed_messages()
+        assert len(outbox_msgs) == 1
+        msg_payload = NoteEvent.model_validate_json(outbox_msgs[0].jsoned_payload)
+        assert msg_payload.event_type == EventType.UPDATE
+
+    @pytest.mark.asyncio
+    async def test_update_note_exception(
+            self,
+            notes_service,
+            test_notes,
+            access_token_payload,
+            outbox_repo):
+        with pytest.raises(ResourceNotFoundException):
+            await notes_service.update_user_note(access_token_payload, 9999, NoteUpdate(name="updated_name"))
+            outbox_msgs = await outbox_repo.get_unprocessed_messages()
+            assert len(outbox_msgs) == 0
 
 
 class TestJWTService:
@@ -131,4 +228,3 @@ class TestJWTService:
         assert access_token_payload.username == "test_user"
         assert access_token_payload.tg_id == 1111
         assert access_token_payload.exp <= int((datetime.now(UTC) + timedelta(minutes=15)).timestamp())
-        assert access_token_payload.type == "access"

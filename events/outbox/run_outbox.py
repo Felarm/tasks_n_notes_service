@@ -4,14 +4,14 @@ import signal
 from loguru import logger
 
 from database import async_session_maker
-from kafka import broker
-from workers.outbox_cleaner import outbox_cleaner
-from workers.outbox_kafka_relay import outbox_relay_worker
+from events.broker import kafka_broker
+from events.models.outbox_cleaner import outbox_cleaner
+from events.models.outbox_kafka_relay import outbox_relay_worker
 
 
 async def main():
     logger.info("workers initializing")
-    await broker.connect()
+    await kafka_broker.connect()
     relay_task = asyncio.create_task(outbox_relay_worker(async_session_maker))
     cleaner_task = asyncio.create_task(outbox_cleaner(async_session_maker))
     loop = asyncio.get_running_loop()
@@ -25,7 +25,7 @@ async def main():
     relay_task.cancel()
     cleaner_task.cancel()
     await asyncio.gather(relay_task, cleaner_task, return_exceptions=True)
-    await broker.stop()
+    await kafka_broker.stop()
     logger.info("workers stopped")
 
 

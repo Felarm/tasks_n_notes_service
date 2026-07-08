@@ -4,7 +4,7 @@ from jose import jwt, JWTError
 
 from config import settings
 from exceptions import UnauthorizedException
-from schemas.token import AccessTokenPayload
+from tokens.schemas import AccessTokenPayload
 
 
 class JWTService:
@@ -14,8 +14,6 @@ class JWTService:
             payload = AccessTokenPayload(**jwt.decode(encoded_token, settings.SECRET_KEY, settings.ALGORITHM))
         except JWTError as e:
             raise UnauthorizedException("Wrong token data") from e
-        if payload.type != "access":
-            raise UnauthorizedException("Wrong token type")
         if payload.exp < int(datetime.now(UTC).timestamp()):
             raise UnauthorizedException("Expired token")
         return payload

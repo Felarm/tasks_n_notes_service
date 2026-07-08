@@ -17,20 +17,20 @@ jobs:
             docker compose up task_n_note_service postgres --build -d
             docker compose exec -T -w /app task_n_note_service sh -c "PYTHONPATH=/app .venv/bin/python -m commands export_openapi"
             docker compose exec -T -w /app task_n_note_service sh -c "uvx --from datamodel-code-generator datamodel-codegen --input openapi.json --output task_n_note_service_contracts.py --capitalize-enum-members"
-            docker cp task_n_note_service:/app/task_n_note_service_contracts.py schemas/task_n_note_service_contracts.py
+            docker cp task_n_note_service:/app/task_n_note_service_contracts.py task_n_note_service_contracts.py
             docker compose down
 
       - name: Checkout command bot service
         uses: actions/checkout@v4
         with:
-          repository: "Felarm/command_bot"
+          repository: ${{ vars.COMMAND_BOT_REPO }}
           token: ${{ secrets.CROSS_REPO_TOKEN }}
           path: "resource-service-dir"
 
       - name: Copy contracts to command bot
         run: |
           mkdir -p resource-service-dir/schemas
-          cp schemas/task_n_note_service_contracts.py resource-service-dir/schemas/task_n_note_service_contracts.py
+          cp task_n_note_service_contracts.py resource-service-dir/schemas/task_n_note_service_contracts.py
 
       - name: Create PR in command bot repo
         uses: peter-evans/create-pull-request@v6

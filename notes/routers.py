@@ -3,9 +3,9 @@ from typing import Annotated
 from fastapi import APIRouter, status, Depends
 
 from dependencies import get_user_data, get_note_service
-from schemas.note import NoteModel, NoteCreate
-from schemas.token import AccessTokenPayload
-from services.note import NoteService
+from notes.schemas import NoteModel, NoteCreate, NoteUpdate
+from tokens.schemas import AccessTokenPayload
+from notes.service import NoteService
 
 router = APIRouter(prefix="/notes", tags=["Notes"])
 JWTUserData = Annotated[AccessTokenPayload, Depends(get_user_data)]
@@ -23,5 +23,10 @@ async def create_user_note(user_data: JWTUserData, note_service: NoteService_, n
 
 
 @router.delete("/{note_id}", status_code=status.HTTP_200_OK)
-async def delete_user_note(_: JWTUserData, note_service: NoteService_, note_id: int):
-    return await note_service.delete_user_note(note_id)
+async def delete_user_note(user_data: JWTUserData, note_service: NoteService_, note_id: int):
+    return await note_service.delete_user_note(user_data,note_id)
+
+
+@router.patch("/{note_id}", status_code=status.HTTP_200_OK)
+async def update_user_note(user_data: JWTUserData, note_service: NoteService_, note_id: int, update_data: NoteUpdate):
+    await note_service.update_user_note(user_data, note_id, update_data)
